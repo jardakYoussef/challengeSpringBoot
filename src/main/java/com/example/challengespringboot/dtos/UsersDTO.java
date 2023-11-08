@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.example.challengespringboot.entities.Users;
-import com.example.challengespringboot.enums.Role;
+import com.example.challengespringboot.enums.ERole;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class UsersDTO {
@@ -74,7 +74,7 @@ public class UsersDTO {
         this.password = password;
     }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(Set<ERole> roles) {
         this.roles = roles.stream().map(r -> r.getDescription()).collect(Collectors.toSet());
     }
 

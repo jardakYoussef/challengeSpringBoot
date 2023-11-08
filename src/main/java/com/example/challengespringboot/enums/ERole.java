@@ -4,7 +4,7 @@ package com.example.challengespringboot.enums;
 import java.util.Arrays;
 import java.util.Objects;
 
-public enum Role {
+public enum ERole {
 
     USER(1, "User"),
     ADMIN(2, "Administrator");
@@ -12,7 +12,7 @@ public enum Role {
     private Integer id;
     private String description;
 
-    Role(Integer id, String description) {
+    ERole(Integer id, String description) {
         this.id = id;
         this.description = description;
     }
@@ -33,15 +33,15 @@ public enum Role {
         this.description = description;
     }
 
-    public static Role fromId(Integer id) {
-        return Arrays.stream(Role.values())
+    public static ERole fromId(Integer id) {
+        return Arrays.stream(ERole.values())
                 .filter(role -> Objects.equals(role.getId(), id))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Unknown role: " + id));
     }
 
-    public static Role fromDescription(String description) {
-        return Arrays.stream(Role.values())
+    public static ERole fromDescription(String description) {
+        return Arrays.stream(ERole.values())
                 .filter(role -> Objects.equals(role.getDescription(), description))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Unknown role: " + description));

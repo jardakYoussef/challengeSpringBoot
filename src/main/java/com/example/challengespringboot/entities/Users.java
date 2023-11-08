@@ -2,29 +2,15 @@ package com.example.challengespringboot.entities;
 
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.example.challengespringboot.dtos.UsersDTO;
-import com.example.challengespringboot.enums.Role;
+import com.example.challengespringboot.enums.ERole;
+import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-
-
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 
 @Entity
 public class Users implements Serializable, UserDetails {
@@ -34,6 +20,14 @@ public class Users implements Serializable, UserDetails {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen_users_id")
     @SequenceGenerator(name = "gen_users_id", sequenceName = "seq_users_id", allocationSize = 1)
     private Long id;
+
+    public List<Movie> getFavoriteMovies() {
+        return favoriteMovies;
+    }
+
+    public void setFavoriteMovies(List<Movie> favoriteMovies) {
+        this.favoriteMovies = favoriteMovies;
+    }
 
     @Column(nullable = false, length = 50)
     private String name;
@@ -45,12 +39,21 @@ public class Users implements Serializable, UserDetails {
     private String password;
 
     @Column(name = "role")
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.EAGER) // eager may use more memory and resources
     @CollectionTable(name = "user_role")
-    private Set<Integer> roles = new HashSet<>(Arrays.asList(Role.USER.getId()));
+    private Set<Integer> roles = new HashSet<>(Arrays.asList(ERole.USER.getId()));
 
+    @ManyToMany
+    private List<Movie> favoriteMovies;
 
-    public Users(Long id, String name, String email, String password, Set<Role> roles) {
+    public void setAuthorities(Set<GrantedAuthority> authorities) {
+        this.authorities = authorities;
+    }
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<GrantedAuthority> authorities;
+
+    public Users(Long id, String name, String email, String password, Set<ERole> roles) {
         super();
         this.id = id;
         this.name = name;
@@ -88,12 +91,17 @@ public class Users implements Serializable, UserDetails {
         return email;
     }
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
+    }
+
     public String getPassword() {
         return password;
     }
 
-    public Set<Role> getRoles() {
-        return roles.stream().map(r -> Role.fromId(r)).collect(Collectors.toSet());
+    public Set<ERole> getRoles() {
+        return roles.stream().map(r -> ERole.fromId(r)).collect(Collectors.toSet());
     }
 
     public void setId(Long id) {
@@ -112,7 +120,7 @@ public class Users implements Serializable, UserDetails {
         this.password = password;
     }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(Set<ERole> roles) {
         if (roles == null || roles.isEmpty())
             this.roles.clear();
         else
@@ -123,19 +131,14 @@ public class Users implements Serializable, UserDetails {
         if (roles == null || roles.isEmpty())
             this.roles.clear();
         else
-            this.roles = roles.stream().map(s -> Role.fromDescription(s).getId()).collect(Collectors.toSet());
+            this.roles = roles.stream().map(s -> ERole.fromDescription(s).getId()).collect(Collectors.toSet());
     }
 
-    public void addRole(Role role) {
+    public void addRole(ERole role) {
         this.roles.add(role.getId());
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(r -> new SimpleGrantedAuthority(Role.fromId(r).name()))
-                .collect(Collectors.toSet());
-    }
+
 
     @Override
     public String getUsername() {
