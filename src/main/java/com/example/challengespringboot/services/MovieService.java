@@ -34,14 +34,14 @@ public class MovieService {
     public String getMovieFromApiWithPageNumber(int pageIteration) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
 
-        HttpHeaders headers = new HttpHeaders();
+        HttpHeaders headers = new HttpHeaders(); // put the bearer code in env file
         headers.set("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4YTViMmM1ODcyOWVjYzMwMGIwZDBlYTU1MGU5YTQ1MyIsInN1YiI6IjY1NDJmZGI2M2UwMWVhMDEwMDIwY2FjMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.V6n3VOEZGRInoZ1tpnxHa-cIMEwypEvnPmosoXnKqRQ");
         headers.set("accept", "application/json");
         HttpEntity<String> entity = new HttpEntity<>("body", headers);
 
         ResponseEntity<String> response = restTemplate.exchange("https://api.themoviedb.org/3/discover/movie?page=" + pageIteration + 1, HttpMethod.GET, entity, String.class);
         //either use object mapper or create another class
-
+        // change restTemplate to webClient.
         String jsonResponse = response.getBody();
 
         // Use a JSON library such as Jackson to convert the JSON response to a Java object.
@@ -49,7 +49,7 @@ public class MovieService {
         objectMapper.configure(SerializationFeature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED, true);
         // Get the JSON response as a JSON node.
         JsonNode jsonNode = objectMapper.readTree(jsonResponse);
-
+        // do not use objectMapper
         JsonNode resultsArray = jsonNode.get("results");
 
         for (JsonNode movieNode : resultsArray) {

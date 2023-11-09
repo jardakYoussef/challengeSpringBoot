@@ -107,7 +107,7 @@ public class UsersService {
     public List<Movie> addMovieToFavorites(Long userId, List<Long> movieIds) throws Exception {
         Optional<Users> userOptional = userRepository.findById(userId);
 
-        if (!userOptional.isPresent()) {
+        if (userOptional.isEmpty()) {
             throw new Exception("User with ID " + userId + " does not exist");
         }
 
@@ -117,7 +117,8 @@ public class UsersService {
             Movie movie = movieService.findById(movieId);
             if (!user.getFavoriteMovies().contains(movie)) {
                 user.getFavoriteMovies().add(movie);
-                movieService.addStar(movie);
+                movieService.addStar(movie); // create a lock in the type and then throw an exception if more than one user try to add
+                // a star to the same movie at the same time
             }
         }
         userRepository.save(user);

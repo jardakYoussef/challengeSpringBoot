@@ -18,7 +18,7 @@ public class MovieController {
     private MovieService movieService;
 
     @Transactional
-    @GetMapping("/api/moviesCharge")
+    @GetMapping("/api/moviesCharge") // use post or put because we're creating
     public ResponseEntity<String> chargeMovies() throws IOException {
         List<Movie> results = new ArrayList<>();
         int pageNumber = 1;
@@ -30,7 +30,16 @@ public class MovieController {
             else
                 pageNumber = 500;
             pageNumber = 2;
+            //just get the first page
         }
+        int maxPageNumber= 1;
+
+       /* do {
+            String pageNumbers = movieService.getMovieFromApiWithPageNumber(pageNumber);
+            maxPageNumber = Integer.valueOf(pageNumbers);
+           pageNumber++;
+        }while(maxPageNumber>pageNumber); */
+
         return ResponseEntity.ok("Movies added successfully");
     }
 

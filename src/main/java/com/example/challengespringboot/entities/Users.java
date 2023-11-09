@@ -13,7 +13,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
-public class Users implements Serializable, UserDetails {
+// @table
+public class Users implements Serializable, UserDetails { // create myUserDetail
     private static final long serialVersionUID = 1L;
 
     @Id
