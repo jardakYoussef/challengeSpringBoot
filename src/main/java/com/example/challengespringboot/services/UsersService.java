@@ -1,13 +1,11 @@
 package com.example.challengespringboot.services;
 
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import com.example.challengespringboot.dtos.UsersDTO;
 import com.example.challengespringboot.entities.Movie;
+import com.example.challengespringboot.entities.Role;
 import com.example.challengespringboot.entities.Users;
 import com.example.challengespringboot.enums.ERole;
 import com.example.challengespringboot.repositories.MovieRepository;
@@ -27,6 +25,9 @@ public class UsersService {
     @Autowired
     private MovieService movieService;
 
+    @Autowired
+    private RoleService roleService;
+
 
     public Users findById(Long id) {
         return userRepository.findById(id).get();
@@ -43,7 +44,6 @@ public class UsersService {
     public Users create(Users user) throws Exception {
          checkEmailDuplication(user);
         user.setId(null);
-        user.addRole(ERole.USER);
         return userRepository.save(user);
     }
 
@@ -80,7 +80,7 @@ public class UsersService {
 
 
     @Transactional  // why it's used ?
-    public Users updateUserRoles(Long userId, Set<ERole> newRoles) {
+    public Users updateUserRoles(Long userId, Set<String> newRoles) throws Exception {
         // Retrieve the user by ID from the database
         Users u = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
@@ -89,18 +89,29 @@ public class UsersService {
         validateRolesExist(newRoles);
 
         // Update the user's roles with the new roles
-        u.setRoles(newRoles);
+        Set<Role> rolesList = new HashSet<>();
+        rolesList.addAll(createRoleListFromName(newRoles));
+            u.setRoles(rolesList);
 
         // Save the updated user
         return userRepository.save(u);
     }
 
-    private void validateRolesExist(Set<ERole> roles) {
-        for (ERole role : roles) {
-            if (!EnumSet.of(ERole.USER, ERole.ADMIN).contains(role)) {
-                throw new IllegalArgumentException("Invalid role: " + role);
+    public void validateRolesExist(Set<String> newRoles) throws Exception {
+        for (String roleName : newRoles) {
+            if (!roleService.existsByName(roleName)) {
+                throw new Exception("Role '" + roleName + "' does not exists.");
             }
         }
+    }
+
+
+    public Set<Role> createRoleListFromName(Set<String> roleNames) {
+        Set<Role> roles = new HashSet<>();
+        for (String roleName : roleNames) {
+            roles.add(roleService.findByName(roleName));
+        }
+        return roles;
     }
 
     @Transactional
@@ -146,6 +157,12 @@ public class UsersService {
         return user.getFavoriteMovies();
     }
 
-
+@Transactional
+    public List<Movie> favoriteMoviesPerUser(Long userId) {
+        Users user = findById(userId);
+        user.initializeFavoriteMovies();
+        List<Movie> movieList = user.getFavoriteMovies();
+        return movieList;
+    }
 }
 

@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.example.challengespringboot.entities.Role;
 import com.example.challengespringboot.entities.Users;
 import com.example.challengespringboot.enums.ERole;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -16,13 +17,13 @@ public class UsersDTO {
     @JsonIgnore
 
     private String password;
-    private Set<String> roles = new HashSet<>();
+    private Set<Role> roles = new HashSet<>();
 
     public UsersDTO() {
         super();
     }
 
-    public UsersDTO(Long id, String name, String email, Set<String> roles) {
+    public UsersDTO(Long id, String name, String email, Set<Role> roles) {
         super();
         this.id = id;
         this.name = name;
@@ -54,7 +55,7 @@ public class UsersDTO {
         return password;
     }
 
-    public Set<String> getRoles() {
+    public Set<Role> getRoles() {
         return roles;
     }
 
@@ -74,8 +75,8 @@ public class UsersDTO {
         this.password = password;
     }
 
-    public void setRoles(Set<ERole> roles) {
-        this.roles = roles.stream().map(r -> r.getDescription()).collect(Collectors.toSet());
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 
 

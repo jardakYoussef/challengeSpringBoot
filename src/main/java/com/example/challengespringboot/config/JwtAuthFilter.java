@@ -1,7 +1,10 @@
 package com.example.challengespringboot.config;
 
+import com.example.challengespringboot.entities.UserDetailsImpl;
 import com.example.challengespringboot.services.JwtService;
+import com.example.challengespringboot.services.UserDetailsServiceImpl;
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,13 +22,14 @@ import java.io.IOException;
 import java.util.Date;
 
 @Component
-public class JwtAuthFilter extends OncePerRequestFilter {
+public class JwtAuthFilter extends OncePerRequestFilter implements Filter {
 	
 	@Autowired
 	private JwtService jwtService;
 	
 	@Autowired
-	private UserDetailsService userDetailsService;
+	private UserDetailsServiceImpl userDetailsService;
+
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -41,7 +45,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 				if (claims.getExpiration().after(new Date())) {
 
 					final String username = claims.getSubject();
-					final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+					final UserDetailsImpl userDetails = userDetailsService.loadUserByUsername(username); // raja3ha UserDetailImp w chouf aleh
 					
 					final UsernamePasswordAuthenticationToken authToken =
 							new UsernamePasswordAuthenticationToken(
@@ -57,5 +61,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 		
 		filterChain.doFilter(request, response);
 	}
+
 
 }

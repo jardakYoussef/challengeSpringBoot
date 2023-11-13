@@ -1,24 +1,47 @@
 package com.example.challengespringboot.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jdk.dynalink.Operation;
-import org.springframework.security.core.GrantedAuthority;
+import com.example.challengespringboot.enums.ERole;
+import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Serializable;
 
 @Entity
-class Role implements GrantedAuthority {
+@Table(name = "roles")
+public class Role implements Serializable {
+
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
+    public Role(String eRole) {
+        this.name = eRole;
+    }
 
-    @Override
-    public String getAuthority() {
+    public Role() {
+    }
+
+    public Long getId() {
         return id;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return "Role{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Column(nullable = false, unique = true)
+    private String name;
 
 
 }

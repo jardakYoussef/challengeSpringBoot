@@ -8,13 +8,14 @@ import java.util.stream.Collectors;
 import com.example.challengespringboot.dtos.UsersDTO;
 import com.example.challengespringboot.enums.ERole;
 import jakarta.persistence.*;
+import org.hibernate.Hibernate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 // @table
-public class Users implements Serializable, UserDetails { // create myUserDetail
+public class Users implements Serializable { // create myUserDetail
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -39,22 +40,21 @@ public class Users implements Serializable, UserDetails { // create myUserDetail
     @Column(nullable = false, length = 60)
     private String password;
 
-    @Column(name = "role")
-    @ElementCollection(fetch = FetchType.EAGER) // eager may use more memory and resources
-    @CollectionTable(name = "user_role")
-    private Set<Integer> roles = new HashSet<>(Arrays.asList(ERole.USER.getId()));
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id")
+    private Set<Role> roles;
+
+    private boolean enabled;
+    @ManyToMany(fetch = FetchType.LAZY)
     private List<Movie> favoriteMovies;
 
-    public void setAuthorities(Set<GrantedAuthority> authorities) {
-        this.authorities = authorities;
+
+    public void initializeFavoriteMovies() {
+        Hibernate.initialize(favoriteMovies);
     }
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Set<GrantedAuthority> authorities;
-
-    public Users(Long id, String name, String email, String password, Set<ERole> roles) {
+    public Users(Long id, String name, String email, String password, Set<Role> roles) {
         super();
         this.id = id;
         this.name = name;
@@ -73,7 +73,7 @@ public class Users implements Serializable, UserDetails { // create myUserDetail
     public Users(UsersDTO dto) {
         this(dto.getName(), dto.getEmail(), dto.getPassword());
         this.setId(dto.getId());
-        this.setStringRoles(dto.getRoles());
+        // this.setRoles(dto.getRoles());
     }
 
     public Users() {
@@ -92,18 +92,11 @@ public class Users implements Serializable, UserDetails { // create myUserDetail
         return email;
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
-    }
 
     public String getPassword() {
         return password;
     }
 
-    public Set<ERole> getRoles() {
-        return roles.stream().map(r -> ERole.fromId(r)).collect(Collectors.toSet());
-    }
 
     public void setId(Long id) {
         this.id = id;
@@ -121,54 +114,37 @@ public class Users implements Serializable, UserDetails { // create myUserDetail
         this.password = password;
     }
 
-    public void setRoles(Set<ERole> roles) {
-        if (roles == null || roles.isEmpty())
-            this.roles.clear();
-        else
-            this.roles = roles.stream().map(r -> r.getId()).collect(Collectors.toSet());
+
+    public Set<Role> getRoles() {
+        return roles;
     }
 
-    public void setStringRoles(Set<String> roles) {
-        if (roles == null || roles.isEmpty())
-            this.roles.clear();
-        else
-            this.roles = roles.stream().map(s -> ERole.fromDescription(s).getId()).collect(Collectors.toSet());
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 
-    public void addRole(ERole role) {
-        this.roles.add(role.getId());
-    }
-
-
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Override
     public String toString() {
-        return "User [id=" + id + ", name=" + name + ", email=" + email + ", roles=" + getRoles() + "]";
+        return "Users{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", roles=" + roles +
+                ", enabled=" + enabled +
+                '}';
     }
 
+    public void addRole(Role role) {
+        this.roles = new HashSet<>();
+        roles.add(role);
+    }
 }

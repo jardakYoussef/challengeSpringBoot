@@ -49,12 +49,12 @@ public class UsersController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/admin/{userId}/upgrade-permissions")
     public ResponseEntity<UsersDTO> updateUserRoles(
             @PathVariable Long userId,
-            @RequestBody Set<ERole> newRoles
-    ) {
+            @RequestBody Set<String> newRoles
+    ) throws Exception {
         Users updatedUser = userService.updateUserRoles(userId, newRoles);
         UsersDTO userDTOUpdated = new UsersDTO();
         userDTOUpdated.setRoles(updatedUser.getRoles());
@@ -72,5 +72,11 @@ public class UsersController {
     @PutMapping("/{userId}/removeFavorite")
     public List<Movie> removeMovieFromFavorites(@PathVariable Long userId, @RequestBody List<Long> movieIds) throws Exception {
         return userService.removeMovieFromFavorites(userId, movieIds);
+    }
+    @Transactional
+    @GetMapping("/{userId}/favoriteMoviesPerUser")
+    public List<Movie> favoriteMoviesPerUser(@PathVariable Long userId){
+        return userService.favoriteMoviesPerUser(userId);
+
     }
 }

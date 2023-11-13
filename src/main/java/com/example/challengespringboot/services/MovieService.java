@@ -6,17 +6,23 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.springframework.cache.annotation.Cacheable;
+
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ServerErrorException;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 
 @Service
 @Transactional
@@ -26,12 +32,54 @@ public class MovieService {
 
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private final WebClient webClient;
 
-    public MovieService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    /*public Flux<Movie> getMovieFromApi() {
+       Flux<Movie> movieFlux= webClient.get()
+                .uri("/discover/movie?page=1")
+               .header("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4YTViMmM1ODcyOWVjYzMwMGIwZDBlYTU1MGU5YTQ1MyIsInN1YiI6IjY1NDJmZGI2M2UwMWVhMDEwMDIwY2FjMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.V6n3VOEZGRInoZ1tpnxHa-cIMEwypEvnPmosoXnKqRQ")
+               .header("Accept", MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+              //  .onStatus(httpStatus -> !httpStatus.is2xxSuccessful(),
+                       // clientResponse -> Mono.error(Exception::new))
+                .bodyToFlux(Movie.class).log();
+               // .onErrorResume(Exception.class, e -> Flux.empty());
+
+        movieFlux.subscribe(movie -> {
+            System.out.println(movie.getTitle());
+        });
+
+        return movieFlux;
+        Flux<Movie> movieFlux = webClient.get()
+                .uri("/discover/movie?page=1")
+                .header("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4YTViMmM1ODcyOWVjYzMwMGIwZDBlYTU1MGU5YTQ1MyIsInN1YiI6IjY1NDJmZGI2M2UwMWVhMDEwMDIwY2FjMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.V6n3VOEZGRInoZ1tpnxHa-cIMEwypEvnPmosoXnKqRQ")
+                .header("Accept", MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+
+
+                .bodyToFlux(Movie.class).log()
+                .onErrorResume(Exception.class, e -> {
+                    System.out.println("Error occurred: " + e.getMessage());
+                    return Flux.empty();
+                });
+
+
+        return movieFlux;
+
+    }
+*/
+
+    public MovieService(WebClient.Builder webClientBuilder, WebClient webClient) {
+
+        this.webClient = webClient;
     }
 
-    public String getMovieFromApiWithPageNumber(int pageIteration) throws JsonProcessingException {
+
+
+
+
+    public String getMovieFromApi() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
 
         HttpHeaders headers = new HttpHeaders(); // put the bearer code in env file
@@ -39,7 +87,7 @@ public class MovieService {
         headers.set("accept", "application/json");
         HttpEntity<String> entity = new HttpEntity<>("body", headers);
 
-        ResponseEntity<String> response = restTemplate.exchange("https://api.themoviedb.org/3/discover/movie?page=" + pageIteration + 1, HttpMethod.GET, entity, String.class);
+        ResponseEntity<String> response = restTemplate.exchange("https://api.themoviedb.org/3/discover/movie?page="  + 1, HttpMethod.GET, entity, String.class);
         //either use object mapper or create another class
         // change restTemplate to webClient.
         String jsonResponse = response.getBody();
@@ -60,14 +108,16 @@ public class MovieService {
         return objectMapper.readValue(jsonNode.get("total_pages").toString(), String.class);
     }
 
+
     public Movie findById(long movieId) throws Exception {
-      Optional<Movie> movieOptional=  movieRepository.findById(movieId);
+        Optional<Movie> movieOptional = movieRepository.findById(movieId);
         if (!movieOptional.isPresent()) {
             throw new Exception("Movie with ID " + movieId + " does not exist");
         }
-       return movieOptional.get();
+        return movieOptional.get();
 
     }
+
     public Movie create(Movie movie) {
         return movieRepository.save(movie);
     }
@@ -88,8 +138,18 @@ public class MovieService {
         return movieRepository.save(movie);
     }
 
+
     public List<Movie> getTopTenMovies() {
         List<Movie> topTenMovies = movieRepository.findTop10ByOrderByStarsDesc();
+        simulateSlowService();
         return topTenMovies;
+    }
+    private void simulateSlowService() {
+        try {
+            long time = 5000L;
+            Thread.sleep(time);
+        } catch (InterruptedException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

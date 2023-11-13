@@ -46,7 +46,9 @@ public class SecurityConfig {
 						sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 				)
 				.authorizeHttpRequests((authz) -> authz
-								.requestMatchers(new AntPathRequestMatcher("/users/admin/**")).hasRole("ADMIN")
+								.requestMatchers(new AntPathRequestMatcher("/users/admin/**")).hasAnyAuthority("ADMIN")
+								.requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
+								.requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
 								.anyRequest().permitAll()
 					//	authorizeRequests.anyRequest().permitAll()
 				).addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
