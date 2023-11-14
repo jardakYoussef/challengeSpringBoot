@@ -8,6 +8,7 @@ import com.example.challengespringboot.entities.Movie;
 import com.example.challengespringboot.entities.Users;
 import com.example.challengespringboot.enums.ERole;
 import com.example.challengespringboot.services.UsersService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +65,7 @@ public class UsersController {
         return ResponseEntity.ok(userDTOUpdated);
     }
 
+    @RateLimiter(name = "backendA")
     @PutMapping("/{userId}/favorites")
     public List<Movie> addMovieToFavorites(@PathVariable Long userId, @RequestBody List<Long> movieIds) throws Exception {
         return userService.addMovieToFavorites(userId, movieIds);
