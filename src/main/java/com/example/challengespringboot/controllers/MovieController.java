@@ -26,7 +26,7 @@ public class MovieController {
     @Transactional
     @Retry(name = "fillDataBase", fallbackMethod = "getMoviesFrom")
     @CircuitBreaker(name = "fillDataBase", fallbackMethod = "getMoviesFrom")
-    @GetMapping("/api/moviesCharge") // use post or put because we're creating
+    @PutMapping("/api/moviesCharge") // use post or put because we're creating
     public List<Movie> chargeMovies() throws IOException {
         List<Movie> results = new ArrayList<>();
         int pageNumber = 1;
@@ -44,8 +44,19 @@ public class MovieController {
         WebClient client = WebClient.create();
         Mono<OmdbSearchResult> mono = client.get()
                 .uri("http://www.omdbapi.com/?i=tt3896198&apikey=d05e7a59")
-                // .header("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4YTViMmM1ODcyOWVjYzMwMGIwZDBlYTU1MGU5YTQ1MyIsInN1YiI6IjY1NDJmZGI2M2UwMWVhMDEwMDIwY2FjMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.V6n3VOEZGRInoZ1tpnxHa-cIMEwypEvnPmosoXnKqRQ")
-                // .header("Accept", MediaType.APPLICATION_JSON_VALUE)
+                .retrieve()
+                .bodyToMono(OmdbSearchResult.class);
+        return mono.block().getMovies();
+    }
+
+    @PutMapping("/api/moviesChargeA") // use post or put because we're creating
+
+    public List<Movie> getMoviesFromA( Throwable throwable) {
+        WebClient client = WebClient.create();
+        Mono<OmdbSearchResult> mono = client.get()
+                .uri("https://moviesdatabase.p.rapidapi.com/titles")
+                .header("X-RapidAPI-Key", "7883902ce6msha4a37f4f8add604p1b21d9jsn114305d711a0")
+                .header("X-RapidAPI-Host", "moviesdatabase.p.rapidapi.com")
                 .retrieve()
                 .bodyToMono(OmdbSearchResult.class);
         return mono.block().getMovies();

@@ -83,7 +83,7 @@ public class MovieService {
         headers.set("accept", "application/json");
         HttpEntity<String> entity = new HttpEntity<>("body", headers);
 
-        ResponseEntity<String> response = restTemplate.exchange("https://api.themoviedb.org/3/discover/movie?page=" + 1, HttpMethod.GET, entity, String.class);
+        ResponseEntity<String> response = restTemplate.exchange("https://api.thzemoviedb.org/3/discover/movie?page=" + 1, HttpMethod.GET, entity, String.class);
         //either use object mapper or create another class
         // change restTemplate to webClient.
         String jsonResponse = response.getBody();

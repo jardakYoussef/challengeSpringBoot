@@ -50,26 +50,26 @@ public class DatabaseService {
 
         // Load all the movies into database
         // Add favorite movies to users
-        List<Movie> movies = new ArrayList<>();
-        List<Movie> allMovies = movieService.getMovieFromApi();
-
-        movies.add(allMovies.get(0));
-        user1.getFavoriteMovies().addAll(movies);
-        movies.add(allMovies.get(1));
-        user2.getFavoriteMovies().addAll(movies);
-        user2.getFavoriteMovies().add(allMovies.get(9));
-        user2.getFavoriteMovies().add(allMovies.get(7));
-
-        movies.add(allMovies.get(2));
-        movies.add(allMovies.get(3));
-        movies.add(allMovies.get(4));
-        movies.add(allMovies.get(5));
-        user3.setFavoriteMovies(movies);
-
-        movies = new ArrayList<>();
-        movies.add(allMovies.get(6));
-
-        user4.setFavoriteMovies(movies);
+//        List<Movie> movies = new ArrayList<>();
+//        List<Movie> allMovies = movieService.getMovieFromApi();
+//
+//        movies.add(allMovies.get(0));
+//        user1.getFavoriteMovies().addAll(movies);
+//        movies.add(allMovies.get(1));
+//        user2.getFavoriteMovies().addAll(movies);
+//        user2.getFavoriteMovies().add(allMovies.get(9));
+//        user2.getFavoriteMovies().add(allMovies.get(7));
+//
+//        movies.add(allMovies.get(2));
+//        movies.add(allMovies.get(3));
+//        movies.add(allMovies.get(4));
+//        movies.add(allMovies.get(5));
+//        user3.setFavoriteMovies(movies);
+//
+//        movies = new ArrayList<>();
+//        movies.add(allMovies.get(6));
+//
+//        user4.setFavoriteMovies(movies);
      //   user4.setFavoriteMovies(user3.getFavoriteMovies());
 
         System.out.println(usersService.create(user1));
