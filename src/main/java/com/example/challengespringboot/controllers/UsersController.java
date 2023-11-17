@@ -79,6 +79,10 @@ public class UsersController {
     @GetMapping("/{userId}/favoriteMoviesPerUser")
     public List<Movie> favoriteMoviesPerUser(@PathVariable Long userId){
         return userService.favoriteMoviesPerUser(userId);
+    }
 
+    @GetMapping("/{userId}/suggestMovie")
+    public Movie suggestMovie(@PathVariable Long userId){
+        return userService.suggestMovie(userId);
     }
 }

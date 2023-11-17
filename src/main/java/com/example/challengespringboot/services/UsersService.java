@@ -8,7 +8,6 @@ import com.example.challengespringboot.entities.Movie;
 import com.example.challengespringboot.entities.Role;
 import com.example.challengespringboot.entities.Users;
 import com.example.challengespringboot.enums.ERole;
-import com.example.challengespringboot.repositories.MovieRepository;
 import com.example.challengespringboot.repositories.UsersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +27,8 @@ public class UsersService {
     @Autowired
     private RoleService roleService;
 
+    private Random randomGenerator = new Random();
+
 
     public Users findById(Long id) {
         return userRepository.findById(id).get();
@@ -42,13 +43,20 @@ public class UsersService {
     }
 
     public Users create(Users user) throws Exception {
-         checkEmailDuplication(user);
+        checkEmailDuplication(user);
         user.setId(null);
         return userRepository.save(user);
     }
 
     public UsersDTO create(UsersDTO dto) throws Exception {
         return new UsersDTO(create(new Users(dto)));
+    }
+
+    public List<Users> findUserByRoleUser() {
+        Set<Role> roles = new HashSet();
+        Role role = roleService.findByName(ERole.USER.name());
+        return userRepository.findByRolesContaining(role).orElseThrow();
+        //  return null;
     }
 
     public Users update(Users user) throws Exception {
@@ -91,7 +99,7 @@ public class UsersService {
         // Update the user's roles with the new roles
         Set<Role> rolesList = new HashSet<>();
         rolesList.addAll(createRoleListFromName(newRoles));
-            u.setRoles(rolesList);
+        u.setRoles(rolesList);
 
         // Save the updated user
         return userRepository.save(u);
@@ -157,12 +165,58 @@ public class UsersService {
         return user.getFavoriteMovies();
     }
 
-@Transactional
+
     public List<Movie> favoriteMoviesPerUser(Long userId) {
         Users user = findById(userId);
-        user.initializeFavoriteMovies();
+        //user.initializeFavoriteMovies();
         List<Movie> movieList = user.getFavoriteMovies();
         return movieList;
+    }
+
+    public Movie suggestMovie(Long userId) {
+        List<Movie> currentUserMovieList = favoriteMoviesPerUser(userId);
+        List<Movie> userMovieList = new ArrayList<>();
+        List<Movie> similarityList = new ArrayList<>();
+        List<Users> usersList = findUserByRoleUser();
+        Users chosenUser = new Users();
+        double similarityPercentage = 0;
+        double currentSimilarityPer = 0;
+        for (Users user : usersList) {
+            userMovieList = favoriteMoviesPerUser(user.getId());
+            similarityList.addAll(currentUserMovieList);
+            similarityList.retainAll(userMovieList);
+            currentSimilarityPer = (double) similarityList.size()/currentUserMovieList.size() *100F;
+            if (!Objects.equals(userId, user.getId())  && currentSimilarityPer > similarityPercentage && currentSimilarityPer!=100) {
+                similarityPercentage = currentSimilarityPer;
+                chosenUser = user;
+            }
+            similarityList.clear();
+        }
+        if (similarityPercentage != 0) {
+            userMovieList = favoriteMoviesPerUser(chosenUser.getId());
+            List<Movie> union = new ArrayList<>(userMovieList);
+            // jarab fessakh liste mtaa currentuser ashal ?
+            List<Movie> intersection = new ArrayList<>(userMovieList);
+            intersection.retainAll(currentUserMovieList);
+
+            union.removeAll(intersection);
+            if(union.isEmpty())
+               return choseRandMovieFromAllMovies(currentUserMovieList);
+            return choseRandomMovie(union);
+        } else {
+          return   choseRandMovieFromAllMovies(currentUserMovieList);
+        }
+    }
+
+    public Movie choseRandomMovie(List<Movie> movieListTo) {
+        int index = randomGenerator.nextInt(movieListTo.size());
+        return movieListTo.get(index);
+    }
+
+    public Movie choseRandMovieFromAllMovies( List<Movie> currentUserMovieList){
+       List<Movie> userMovieList = movieService.getAllMovies();
+        userMovieList.removeAll(currentUserMovieList);
+        return choseRandomMovie(userMovieList);
     }
 }
 

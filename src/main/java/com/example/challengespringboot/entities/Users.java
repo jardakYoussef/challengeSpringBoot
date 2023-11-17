@@ -46,7 +46,7 @@ public class Users implements Serializable { // create myUserDetail
     private Set<Role> roles;
 
     private boolean enabled;
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     private List<Movie> favoriteMovies;
 
 
@@ -61,6 +61,7 @@ public class Users implements Serializable { // create myUserDetail
         this.email = email;
         this.password = password;
         this.setRoles(roles);
+        this.favoriteMovies= new ArrayList<>();
     }
 
     public Users(String name, String email, String password) {
